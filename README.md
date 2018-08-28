@@ -1,4 +1,4 @@
-# Cookie Redis Store
+# Magic Cookie
 
 Supports Redis >= 2.6.12 and (Node.js >= 6).
 
@@ -47,11 +47,12 @@ const { MemoryCookieStore } = require('./');
     anotherkey: 'something',
     someelse: 'content',
   };
-  const url = `https://httpbin.org/cookies/set?${querystring.stringify(qs)}`;
+  const urlSet = `https://httpbin.org/cookies/set?${querystring.stringify(qs)}`;
+  const urlGet = 'https://httpbin.org/cookies';
 
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  await page.goto(url, { waitUntil: 'networkidle2' });
+  await page.goto(urlSet, { waitUntil: 'networkidle2' });
 
   const cookies = await page.cookies();
 
@@ -62,7 +63,7 @@ const { MemoryCookieStore } = require('./');
 
   const jar = rp.jar(cookieMemory);
 
-  const response = await rp(url, { jar, json: true });
+  const response = await rp(urlGet, { jar, json: true });
   console.log(response);
 })();
 ```
@@ -103,7 +104,7 @@ const { MemoryCookieStore } = require('magic-cookie');
   console.log(response);
 })();
 ```
-## Options
+## Options to use with Redis Store
 
   * `path` **optional** You can specify which Redis address to connect. [*default:* 'localhost:6379 db 0']
   * `id` **optional** ID for each redis store so that we can use multiple stores with the same redis database [*default:* 'default']
@@ -111,10 +112,10 @@ const { MemoryCookieStore } = require('magic-cookie');
 ``` javascript
 const rp = require('request-promise');
 
-const CookieRedisStore = require('magic-cookie');
+const { RedisStore } = require('magic-cookie');
 
 // Connect to 127.0.0.1:6380, db 4, using password "authpassword" and stores on key "my-cookie"
-const jar = rp.jar(new CookieRedisStore('redis://:authpassword@127.0.0.1:6380/4', 'my-cookie'));
+const jar = rp.jar(new RedisStore('redis://:authpassword@127.0.0.1:6380/4', 'my-cookie'));
 
 (async () => {
   const qs = {
