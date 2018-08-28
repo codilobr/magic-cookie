@@ -14,11 +14,12 @@ describe('Puppeteer', () => {
     anotherkey: 'something',
     someelse: 'content',
   };
-  const url = `https://httpbin.org/cookies/set?${querystring.stringify(qs)}`;
+  const urlSet = `https://httpbin.org/cookies/set?${querystring.stringify(qs)}`;
+  const urlGet = 'https://httpbin.org/cookies/get';
   it('set cookie on puppetter and get on request', async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    await page.goto(urlSet, { waitUntil: 'networkidle2' });
 
     const cookies = await page.cookies();
 
@@ -27,21 +28,21 @@ describe('Puppeteer', () => {
     const cookieMemory = new MemoryCookieStore();
     cookieMemory.loadPuppeteerCookie(cookies);
     jar = rp.jar(cookieMemory);
-    const response = await rp(url, { jar, json: true });
+    const response = await rp(urlGet, { jar, json: true });
     expect(qs).to.deep.equal(response.cookies);
   });
   it('set cookie on request and get on puppeteer', async () => {
     const cookieMemory = new MemoryCookieStore();
 
     jar = rp.jar(cookieMemory);
-    await rp(url, { jar, json: true });
+    await rp(urlSet, { jar, json: true });
 
     const cookies = cookieMemory.getPuppeteerCookie();
 
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.setCookie(...cookies);
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    await page.goto(urlGet, { waitUntil: 'networkidle2' });
     const bodyHandle = await page.$('body');
     const response = await page.evaluate(body => JSON.parse(body.innerText), bodyHandle);
 
